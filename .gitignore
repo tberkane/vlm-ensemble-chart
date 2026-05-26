@@ -1,0 +1,81 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+#IDE
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+
+#SOFA
+SOFA/build
+SOFA/sofa.egg-info
+SOFA/dist
+
+#Megatron
+megatron/fused_kernels/build/
+
+*.pth
+*.pt
+*.tar
+*.out
+tensorboard/
+save_model/
+
+debug/
+language_evaluation
+evalcap
+.ipynb_checkpoints
+
+core-*
+.nfs*
+
+# ===== VLM Ensemble Research Specific =====
+
+# Data files (do not commit datasets)
+data/chartqa/
+data/results/
+data/epicurve/
+*.jsonl
+*.tsv
+
+# Model weights (too large for git)
+models/
+pretrained_models/
+checkpoints/
+*.bin
+*.safetensors
+*.h5
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+.env
+
+# Jupyter notebooks (keep templates, ignore working notebooks)
+!notebooks/*_template.ipynb
+
+# Logs and temporary files
+logs/
+*.log
+temp/
+tmp/
+*.tmp
+
+# Experiment outputs
+runs/
+wandb/
+outputs/adaptive/
+outputs/predict/
+outputs/ensemble/
+
+# Keep certain documentation files
+!README.md
+!GETTING_STARTED.md
+!LICENSE
+!requirements.txt

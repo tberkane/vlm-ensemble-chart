@@ -1,0 +1,39 @@
+# Core dependencies from TinyChart
+torch==2.0.1
+torchvision==0.15.2
+transformers==4.37.2
+tokenizers==0.15.1
+accelerate==0.21.0
+peft==0.4.0
+bitsandbytes==0.41.0
+scipy
+editdistance
+
+# Data processing
+pandas
+numpy
+scikit-learn==1.2.2
+
+# Visualization
+matplotlib
+seaborn
+
+# Utilities
+tqdm
+pyyaml
+python-dotenv
+jsonargparse
+wandb
+
+# HuggingFace datasets
+datasets
+huggingface-hub
+
+# Jupyter (optional, for notebooks)
+jupyter
+ipykernel
+
+# Development (optional)
+pytest
+black
+flake8

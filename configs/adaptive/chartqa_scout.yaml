@@ -1,0 +1,23 @@
+# Self-ensembling on ChartQA (paper default settings; T=2.0 for ChartQA).
+cfg:
+  input_images_dir: "data/ChartQA/png"
+  gt_dir: "data/ChartQA/tables"
+  strategy: "incremental_ensemble"
+  model: "meta-llama/llama-4-scout-17b-16e-instruct"
+  temperature: 2.0
+
+  # Iterative sampling + convergence detection
+  incremental_initial_batch_size: 2
+  incremental_max_samples: 20
+  incremental_patience: 2
+  incremental_convergence_coverage: 0.95
+  incremental_convergence_tolerance: 0.01
+  incremental_exact_match: false
+
+  # Cell-wise aggregation
+  aggregation: "median"
+  pruning: true
+  pruning_threshold: 0.2
+
+  use_wandb: false
+  wandb_project: "vlm-ensemble-chart-extraction"
