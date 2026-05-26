@@ -1,6 +1,0 @@
-cfg:
-  # Directory of a prediction/ensemble run (contains predictions.json)
-  run_dir: "outputs/adaptive/<your_run_dir>"
-  gt_dir: "data/ChartQA/tables"
-  use_wandb: false
-  wandb_project: "vlm-ensemble-chart-extraction"

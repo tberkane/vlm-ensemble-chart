@@ -1,6 +1,7 @@
 # Self-Ensembling Vision-Language Models for Chart Data Extraction
 
-Code and benchmark for the paper *Self-Ensembling Vision-Language Models for Chart Data Extraction*.
+Core implementation for the paper *Self-Ensembling Vision-Language Models for Chart Data
+Extraction*.
 
 We repeatedly sample tabular outputs from a base VLM for a fixed chart image, align the
 candidate tables at the cell level, and take per-cell medians to produce a more accurate
@@ -8,9 +9,8 @@ consensus table. The method also includes convergence-based early stopping and a
 uncertainty estimate from dispersion across samples. It is model-agnostic and can be
 layered on top of any chart-to-table model.
 
-This repository also contains **WB-ChartExtract**, a benchmark of 1,000 synthetic charts
-built from World Bank data (4 chart types × 4 rendering libraries), with clean
-ground-truth tables.
+This work also introduces **WB-ChartExtract**, a benchmark of 1,000 synthetic charts built
+from World Bank data (4 chart types × 4 rendering libraries) with clean ground-truth tables.
 
 - **Code:** https://github.com/tberkane/vlm-ensemble-chart
 - **Dataset:** https://huggingface.co/datasets/tberkane/WB-ChartExtract
@@ -32,71 +32,63 @@ cp .env.example .env
 
 ## Data
 
-Download WB-ChartExtract from the Hugging Face Hub and place it under `data/`:
+Download WB-ChartExtract from the Hugging Face Hub:
 
 ```bash
 hf download tberkane/WB-ChartExtract --repo-type dataset --local-dir "data/WB-ChartExtract"
 ```
 
-This yields:
+This yields `png/` (1,000 chart images), `tables/` (1,000 ground-truth CSV tables), and
+`metadata.json` (chart type, library, countries, series, etc. per image).
 
-```
-data/WB-ChartExtract/
-├── png/            # 1,000 chart images (1.png ... 1000.png)
-├── tables/         # 1,000 ground-truth tables (1.csv ... 1000.csv)
-└── metadata.json   # chart_type, library, countries, series, etc. per image
-```
-
-For ChartQA, download the dataset from
-[ahmed-masry/ChartQA](https://huggingface.co/datasets/ahmed-masry/ChartQA) and arrange the
-test split as `data/ChartQA/png` and `data/ChartQA/tables`.
-
-## Usage
-
-All scripts take a YAML config via `--config`. Edit the configs in `configs/` to change the
-base model, temperature, data paths, or ensembling hyperparameters.
-
-**Single-pass extraction:**
-
-```bash
-python scripts/predict.py --config configs/predict/wb_scout.yaml
-```
-
-**Self-ensembling (iterative sampling + cell-wise aggregation + convergence detection):**
-
-```bash
-python scripts/adaptive/predict.py --config configs/adaptive/wb_scout.yaml
-```
-
-**Evaluation (RMS_F1):** point `run_dir` at a prediction/ensemble output directory, then:
-
-```bash
-python scripts/eval.py --config configs/eval/wb.yaml
-```
-
-**Regenerate the WB-ChartExtract benchmark from scratch:**
-
-```bash
-python scripts/generate_world_bank_charts.py
-```
-
-Configs are provided for both ChartQA and WB-ChartExtract. To use a different base model,
-change the `model` field (e.g. `qwen/qwen3-vl-235b-a22b-instruct`, `tinychart`, `deplot`).
-On WB-ChartExtract the paper uses temperature 0.0; on ChartQA, 2.0 for self-ensembling.
-
-## Repository structure
+## Library layout
 
 ```
 src/
 ├── extract_data.py        # query a base VLM for a TSV table (with response caching)
 ├── ensemble.py            # cell-level table alignment + aggregation
-├── eval_chart2table.py    # RMS_F1 evaluation metric
-├── adaptive/              # iterative sampling strategies, convergence, aggregators
+├── eval_chart2table.py    # RMS_F1 evaluation metric (and error-type breakdown)
+├── config.py, utils.py    # config dataclasses and table-normalization helpers
+├── adaptive/              # iterative self-ensembling
+│   ├── strategies.py      #   sampling strategies (incl. IncrementalEnsembleSamplingStrategy)
+│   ├── aggregation.py     #   cell-wise aggregators (median, mean, medoid, Huber)
+│   └── convergence.py     #   convergence detection / early stopping
 └── chart_gen/             # WB-ChartExtract chart generation (4 libraries, 4 chart types)
-scripts/                   # predict / ensemble / eval / benchmark-generation entry points
-experiments/               # scripts reproducing the paper's figures and tables
-configs/                   # example configs for prediction, self-ensembling, and eval
 ```
+
+## Programmatic use
+
+Sample a single table from a base VLM:
+
+```python
+from pathlib import Path
+from src.extract_data import extract_data_from_chart, CHART_EXTRACTION_PROMPT_WB
+
+result = extract_data_from_chart(
+    image_path=Path("data/WB-ChartExtract/png/1.png"),
+    model="meta-llama/llama-4-scout-17b-16e-instruct",
+    temperature=0.0,
+    prompt=CHART_EXTRACTION_PROMPT_WB,
+)
+```
+
+Self-ensembling composes the building blocks in `src.adaptive` — an
+`IncrementalEnsembleSamplingStrategy` that repeatedly samples and updates a consensus,
+`MedianAggregation` for cell-wise aggregation, and `IncrementalEnsembleConvergence` for
+early stopping:
+
+```python
+from src.adaptive import (
+    IncrementalEnsembleSamplingStrategy,
+    MedianAggregation,
+    IncrementalEnsembleConvergence,
+)
+```
+
+On WB-ChartExtract the paper uses temperature 0.0; on ChartQA, 2.0 for self-ensembling. To
+use a different base model, change the `model` argument (e.g.
+`qwen/qwen3-vl-235b-a22b-instruct`, `tinychart`, `deplot`). Extraction quality is scored
+with the RMS_F1 metric in `src/eval_chart2table.py`.
 
 ## Citation
 

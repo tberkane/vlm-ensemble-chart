@@ -1,8 +1,0 @@
-cfg:
-  input_images_dir: "data/ChartQA/png"
-  model: "meta-llama/llama-4-scout-17b-16e-instruct"
-  temperature: 0.0
-  prompt: "CHART_EXTRACTION_PROMPT"
-  run_dir: null
-  use_wandb: false
-  wandb_project: "vlm-ensemble-chart-extraction"
